@@ -1,0 +1,57 @@
+{
+    "player": {
+        "email": "nxxx8@gmail.com",
+        "entry_set": [
+            321992
+        ],
+        "first_name": "Sebaxxxn",
+        "id": 83241176,
+        "last_name": "Kadxxxy",
+        "region": 229,
+        "region_code_long": "USA",
+        "region_code_short": "US",
+        "region_name": "USA",
+        "username": "83241176 nxxxr18@gmail.com"
+    },
+    "entries": [
+        {
+            "auto_draft": false,
+            "draft_game_status": "started",
+            "email": false,
+            "event_points": 30,
+            "event_transfers": 0,
+            "favourite_team": null,
+            "id": 321992,
+            "league_set": [
+                46301
+            ],
+            "name": "SkyJim",
+            "overall_points": 30,
+            "player_first_name": "Sexxxxan",
+            "player_last_name": "Kaxxxxxy",
+            "region_name": "USA",
+            "region_code_short": "US",
+            "region_code_long": "USA",
+            "started_event": 1,
+            "transactions_event": 0,
+            "transactions_total": 0
+        }
+    ],
+    "leagues": [
+        {
+            "id": 46301,
+            "name": "Video Assisted Racketeering",
+            "scoring": "c"
+        }
+    ],
+    "time": 1724196490,
+    "active": {
+        "entry": 321992,
+        "league": 46301,
+        "watchlist": [
+            220,
+            38,
+            163
+        ]
+    }
+}

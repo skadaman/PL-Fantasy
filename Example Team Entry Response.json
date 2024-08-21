@@ -1,0 +1,122 @@
+{
+    "entry_history": {},
+    "picks": [
+      {
+        "element": 508,
+        "is_captain": false,
+        "is_vice_captain": false,
+        "multiplier": 1,
+        "position": 1
+      },
+      {
+        "element": 339,
+        "is_captain": false,
+        "is_vice_captain": false,
+        "multiplier": 1,
+        "position": 2
+      },
+      {
+        "element": 211,
+        "is_captain": false,
+        "is_vice_captain": false,
+        "multiplier": 1,
+        "position": 3
+      },
+      {
+        "element": 163,
+        "is_captain": false,
+        "is_vice_captain": false,
+        "multiplier": 1,
+        "position": 4
+      },
+      {
+        "element": 210,
+        "is_captain": false,
+        "is_vice_captain": false,
+        "multiplier": 1,
+        "position": 5
+      },
+      {
+        "element": 345,
+        "is_captain": false,
+        "is_vice_captain": false,
+        "multiplier": 1,
+        "position": 6
+      },
+      {
+        "element": 327,
+        "is_captain": false,
+        "is_vice_captain": false,
+        "multiplier": 1,
+        "position": 7
+      },
+      {
+        "element": 329,
+        "is_captain": false,
+        "is_vice_captain": false,
+        "multiplier": 1,
+        "position": 8
+      },
+      {
+        "element": 346,
+        "is_captain": false,
+        "is_vice_captain": false,
+        "multiplier": 1,
+        "position": 9
+      },
+      {
+        "element": 220,
+        "is_captain": false,
+        "is_vice_captain": false,
+        "multiplier": 1,
+        "position": 10
+      },
+      {
+        "element": 497,
+        "is_captain": false,
+        "is_vice_captain": false,
+        "multiplier": 1,
+        "position": 11
+      },
+      {
+        "element": 201,
+        "is_captain": false,
+        "is_vice_captain": false,
+        "multiplier": 1,
+        "position": 12
+      },
+      {
+        "element": 177,
+        "is_captain": false,
+        "is_vice_captain": false,
+        "multiplier": 1,
+        "position": 13
+      },
+      {
+        "element": 175,
+        "is_captain": false,
+        "is_vice_captain": false,
+        "multiplier": 1,
+        "position": 14
+      },
+      {
+        "element": 335,
+        "is_captain": false,
+        "is_vice_captain": false,
+        "multiplier": 1,
+        "position": 15
+      }
+    ],
+    "subs": [
+      {
+        "element_in": 220,
+        "element_out": 177,
+        "event": 1
+      },
+      {
+        "element_in": 210,
+        "element_out": 175,
+        "event": 1
+      }
+    ]
+  }
