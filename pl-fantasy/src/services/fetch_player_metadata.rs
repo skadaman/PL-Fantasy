@@ -76,7 +76,7 @@ pub struct Player {
    pub team: u32,
 }
 
-pub async fn fetch_player_metadata() -> Result<PlayerMetaData, Box<dyn std::error::Error>> {
+pub async fn fetch_player_metadata() -> Result<FilteredPlayerMetaData, Box<dyn std::error::Error>> {
     let url = format!("https://draft.premierleague.com/api/bootstrap-static");
 
     let client = reqwest::Client::new();
@@ -84,8 +84,30 @@ pub async fn fetch_player_metadata() -> Result<PlayerMetaData, Box<dyn std::erro
 
     if response.status().is_success() {
         let all_player_data: PlayerMetaData = response.json().await?;
-        Ok(all_player_data)
+        let player_data: filter_player_data(all_player_data);
+        Ok(player_data)
     } else {
         Err(format!("Failed to fetch data: HTTP {}", response.status()).into())
+    }
+}
+
+pub struct FilteredPlayerMetaData {
+    pub elements: Vec<SimplePlayer>,
+}
+
+pub struct SimplePlayer {
+    pub id: u32,
+    pub team: u32,
+    pub web_name: String,
+}
+
+
+pub fn filter_player_data(long_data: PlayerMetaData) -> FilteredPLayerData{
+    FilteredPlayerMetaData {
+        elements: long_data.elements.into_iter().map(|player| SimplePlayer {
+            id: player.id,
+            team: player.team,
+            web_name: player.web_name,
+        }).collect(),
     }
 }

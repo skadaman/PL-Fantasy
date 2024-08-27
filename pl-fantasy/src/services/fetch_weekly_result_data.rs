@@ -2,6 +2,8 @@ use reqwest;
 use serde::{Serialize, Deserialize};
 use std::collections::HashMap;
 
+use super::fetch_team_data::{SimplifiedTeamSelection, TeamSelection};
+
 #[derive(Serialize, Deserialize, Debug)]
 pub struct FplData {
     pub elements: HashMap<String, Element>,
@@ -81,8 +83,26 @@ pub struct StatItem {
     pub value: i32,
 }
 
+#[derive(Debug)]
+pub struct CombinedTeamResult {
+    pub element: u32,
+    pub position: u8,
+    pub total_points: i32,
+    pub minutes: i32,
+    pub goals_scored: i32,
+    pub assists: i32,
+    pub clean_sheets: i32,
+    pub goals_conceded: i32,
+    pub own_goals: i32,
+    pub penalties_saved: i32,
+    pub penalties_missed: i32,
+    pub yellow_cards: i32,
+    pub red_cards: i32,
+    pub saves: i32,
+    pub bonus: i32,
+}
 
-pub async fn fetch_weekly_result_data(week: u32) -> Result<HashMap<String, Element>, Box<dyn std::error::Error>> {
+pub async fn fetch_weekly_result_data(week: u32, team_selection: SimplifiedTeamSelection) -> Result<Vec<CombinedTeamResult>, Box<dyn std::error::Error>> {
     let url = format!("https://draft.premierleague.com/api/event/{}/live", week);
 
     let client = reqwest::Client::new();
@@ -94,7 +114,33 @@ pub async fn fetch_weekly_result_data(week: u32) -> Result<HashMap<String, Eleme
         // It is nested inside a hash map where the index is equal to the player id in 
         // the player data.
         let weekly_result_data: HashMap<String, Element> = all_data.elements;
-        Ok(weekly_result_data)
+        
+        let combined_data: Vec<CombinedTeamResult> = team_selection.picks
+        .into_iter()
+        .filter_map(|pick| {
+            weekly_result_data.get(&pick.element.to_string()).map(|element| {
+                CombinedTeamResult {
+                    element: pick.element,
+                    position: pick.position,
+                    total_points: element.stats.total_points,
+                    minutes: element.stats.minutes,
+                    goals_scored: element.stats.goals_scored,
+                    assists: element.stats.assists,
+                    clean_sheets: element.stats.clean_sheets,
+                    goals_conceded: element.stats.goals_conceded,
+                    own_goals: element.stats.own_goals,
+                    penalties_saved: element.stats.penalties_saved,
+                    penalties_missed: element.stats.penalties_missed,
+                    yellow_cards: element.stats.yellow_cards,
+                    red_cards: element.stats.red_cards,
+                    saves: element.stats.saves,
+                    bonus: element.stats.bonus,
+                }
+            })
+        })
+        .collect();
+
+    Ok(combined_data)
     } else {
         Err(format!("Failed to fetch data: HTTP {}", response.status()).into())
     }

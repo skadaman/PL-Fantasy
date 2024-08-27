@@ -29,7 +29,33 @@ pub struct Substitution {
     pub element_out: u32,
     pub event: u8,
 }
-pub async fn fetch_team_data(team_id: u32, week: u32) -> Result<TeamSelection, Box<dyn std::error::Error>> {
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct SimplifiedTeamSelection {
+    pub picks: Vec<SimplifiedPick>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct SimplifiedPick {
+    pub element: u32,
+    pub position: u8,
+}
+
+impl From<TeamSelection> for SimplifiedTeamSelection {
+    fn from(team_selection: TeamSelection) -> Self {
+        SimplifiedTeamSelection {
+            picks: team_selection.picks
+                .into_iter()
+                .map(|pick| SimplifiedPick {
+                    element: pick.element,
+                    position: pick.position,
+                })
+                .collect(),
+        }
+    }
+}
+
+pub async fn fetch_team_data(team_id: u32, week: u32) -> Result<SimplifiedTeamSelection, Box<dyn std::error::Error>> {
     let url = format!("https://draft.premierleague.com/api/entry/{}/event/{}", team_id, week);
 
     let client = reqwest::Client::new();
@@ -37,7 +63,8 @@ pub async fn fetch_team_data(team_id: u32, week: u32) -> Result<TeamSelection, B
 
     if response.status().is_success() {
         let team_selection: TeamSelection = response.json().await?;
-        Ok(team_selection)
+        let simple_team: SimplifiedTeamSelection = SimplifiedTeamSelection::from(team_selection);
+        Ok(simple_team)
     } else {
         Err(format!("Failed to fetch data: HTTP {}", response.status()).into())
     }

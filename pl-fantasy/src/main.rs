@@ -1,6 +1,6 @@
 mod services;
 
-use services::{fetch_league_data, fetch_team_data, fetch_player_metadata, fetch_weekly_result_data };
+use services::{fetch_league_data, fetch_player_metadata::{self, PlayerMetaData}, fetch_team_data, fetch_weekly_result_data };
 use std::env;
 use services::config::{PULL_PLAYER_METADATA, DEFAULT_WEEK};
 
@@ -17,33 +17,48 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let team_id: u32 = 321992;
 
     if PULL_PLAYER_METADATA {
-        match fetch_player_metadata::fetch_player_metadata().await {
+    let player_metadata =    match fetch_player_metadata::fetch_player_metadata().await {
 
-            Ok(player_metadata) => println!("Pulled player metadata.") ,
+            Ok(data) => {
+                println!("Pulled player metadata.");
+                data
+            } ,
             Err(e) => println!("Error: {}", e),
-        }
+        };
     }
     // TODO: else statement where we just read from file. This can late be a db store. 
 
-    match fetch_league_data::fetch_league_data(league_id).await {
-        Ok(league_data) =>{
+   let league_data = match fetch_league_data::fetch_league_data(league_id).await {
+        Ok(data) =>{
             println!("Pulled data for league: {}", league_data.league.name);
+            data
         },
         Err(e) => println!("Error: {}", e),
-    }
+    };
 
-    match fetch_team_data::fetch_team_data(team_id, week).await {
+    let team_selection = match fetch_team_data::fetch_team_data(team_id, week).await {
 
-        Ok(team_data) => println!("Pulled team selection data."),
+        Ok(data) => {
+            println!("Pulled team selection data.");
+            data
+        },
+        Err(e) => {
+            println!("Error: {}", e);
+            return Err(e.into());
+        }
+    };
+
+    let weekly_result =match fetch_weekly_result_data::fetch_weekly_result_data(week, team_data).await {
+
+        Ok(data) => {
+            println!("Pulled weekly result data.");
+            data
+        },
         Err(e) => println!("Error: {}", e),
-    }
-
-    match fetch_weekly_result_data::fetch_weekly_result_data(week).await {
-
-        Ok(weekly_result_data) => println!("Pulled weekly result data."),
-        Err(e) => println!("Error: {}", e),
-    }
+    };
 
     //TODO: Collate the structs into a single struct with the dimensions that we want. 
     Ok(())
 }
+
+
