@@ -16,26 +16,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     };
     let team_id: u32 = 321992;
 
-    if PULL_PLAYER_METADATA {
-    let player_metadata =    match fetch_player_metadata::fetch_player_metadata().await {
-
-            Ok(data) => {
-                println!("Pulled player metadata.");
-                data
-            } ,
-            Err(e) => println!("Error: {}", e),
-        };
-    }
-    // TODO: else statement where we just read from file. This can late be a db store. 
-
-   let league_data = match fetch_league_data::fetch_league_data(league_id).await {
-        Ok(data) =>{
-            println!("Pulled data for league: {}", league_data.league.name);
-            data
-        },
-        Err(e) => println!("Error: {}", e),
-    };
-
     let team_selection = match fetch_team_data::fetch_team_data(team_id, week).await {
 
         Ok(data) => {
@@ -47,14 +27,42 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             return Err(e.into());
         }
     };
+    if PULL_PLAYER_METADATA{
+        let player_metadata: fetch_player_metadata::FilteredPlayerMetaData = match fetch_player_metadata::fetch_player_metadata().await {
 
-    let weekly_result =match fetch_weekly_result_data::fetch_weekly_result_data(week, team_data).await {
+            Ok(data) => {
+                println!("Pulled player metadata.");
+                data
+            } ,
+            Err(e) => {
+                println!("Error: {}", e);
+                return Err(e.into());
+            },
+        };
+    }
+    // TODO: else statement where we just read from file. This can late be a db store. 
+
+   let league_data = match fetch_league_data::fetch_league_data(league_id).await {
+        Ok(data) =>{
+            println!("Pulled data for league: {}", data.league.name);
+            data
+        },
+        Err(e) => {
+            println!("Error: {}", e);
+            return Err(e.into());
+        },
+    };
+
+    let weekly_result = match fetch_weekly_result_data::fetch_weekly_result_data(week, team_selection).await {
 
         Ok(data) => {
             println!("Pulled weekly result data.");
             data
         },
-        Err(e) => println!("Error: {}", e),
+        Err(e) => {
+        println!("Error: {}", e);
+        return Err(e.into());
+        }
     };
 
     //TODO: Collate the structs into a single struct with the dimensions that we want. 
@@ -62,3 +70,36 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 }
 
 
+#[derive(Debug)]
+pub struct EnrichedTeamResult {
+    pub element: u32,
+    pub position: u8,
+    pub total_points: i32,
+    pub bonus: i32,
+    pub explain: Vec<ExplainItem>,
+    pub team: u32,
+    pub web_name: String,
+}
+
+pub fn enrich_team_result(combined_data: Vec<CombinedTeamResult>, player_metadata: FilteredPlayerMetaData) -> Vec<EnrichedTeamResult> {
+    let player_map: HashMap<u32, &SimplePlayer> = player_metadata.elements
+        .iter()
+        .map(|player| (player.id, player))
+        .collect();
+
+    combined_data.into_iter()
+        .filter_map(|result| {
+            player_map.get(&result.element).map(|&player| {
+                EnrichedTeamResult {
+                    element: result.element,
+                    position: result.position,
+                    total_points: result.total_points,
+                    bonus: result.bonus,
+                    explain: result.explain,
+                    team: player.team,
+                    web_name: player.web_name.clone(),
+                }
+            })
+        })
+        .collect()
+}

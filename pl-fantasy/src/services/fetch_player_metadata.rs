@@ -84,7 +84,7 @@ pub async fn fetch_player_metadata() -> Result<FilteredPlayerMetaData, Box<dyn s
 
     if response.status().is_success() {
         let all_player_data: PlayerMetaData = response.json().await?;
-        let player_data: filter_player_data(all_player_data);
+        let player_data: FilteredPlayerMetaData = filter_player_data(all_player_data);
         Ok(player_data)
     } else {
         Err(format!("Failed to fetch data: HTTP {}", response.status()).into())
@@ -102,7 +102,7 @@ pub struct SimplePlayer {
 }
 
 
-pub fn filter_player_data(long_data: PlayerMetaData) -> FilteredPLayerData{
+pub fn filter_player_data(long_data: PlayerMetaData) -> FilteredPlayerMetaData {
     FilteredPlayerMetaData {
         elements: long_data.elements.into_iter().map(|player| SimplePlayer {
             id: player.id,

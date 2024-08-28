@@ -1,7 +1,6 @@
 use reqwest;
 use serde::{Serialize, Deserialize};
 use std::collections::HashMap;
-
 use super::fetch_team_data::{SimplifiedTeamSelection, TeamSelection};
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -12,11 +11,11 @@ pub struct FplData {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Element {
-    pub explain: Vec<Vec<Vec<ExplainItem>>>,
+    pub explain: Vec<ExplainItem>,  // Changed from Vec<Vec<Vec<ExplainItem>>>
     pub stats: Stats,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]  // Added Clone
 pub struct ExplainItem {
     pub name: String,
     pub points: i32,
@@ -51,6 +50,7 @@ pub struct Stats {
     pub total_points: i32,
     pub in_dreamteam: bool,
 }
+
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Fixture {
     pub id: i32,
@@ -88,59 +88,32 @@ pub struct CombinedTeamResult {
     pub element: u32,
     pub position: u8,
     pub total_points: i32,
-    pub minutes: i32,
-    pub goals_scored: i32,
-    pub assists: i32,
-    pub clean_sheets: i32,
-    pub goals_conceded: i32,
-    pub own_goals: i32,
-    pub penalties_saved: i32,
-    pub penalties_missed: i32,
-    pub yellow_cards: i32,
-    pub red_cards: i32,
-    pub saves: i32,
     pub bonus: i32,
+    pub explain: Vec<ExplainItem>,  // Changed from ExplainItem to Vec<ExplainItem>
 }
 
 pub async fn fetch_weekly_result_data(week: u32, team_selection: SimplifiedTeamSelection) -> Result<Vec<CombinedTeamResult>, Box<dyn std::error::Error>> {
     let url = format!("https://draft.premierleague.com/api/event/{}/live", week);
-
     let client = reqwest::Client::new();
     let response = client.get(&url).send().await?;
-
     if response.status().is_success() {
         let all_data: FplData = response.json().await?;
-        // The explain struct has the summary data for the player performance. 
-        // It is nested inside a hash map where the index is equal to the player id in 
-        // the player data.
         let weekly_result_data: HashMap<String, Element> = all_data.elements;
-        
         let combined_data: Vec<CombinedTeamResult> = team_selection.picks
-        .into_iter()
-        .filter_map(|pick| {
-            weekly_result_data.get(&pick.element.to_string()).map(|element| {
-                CombinedTeamResult {
-                    element: pick.element,
-                    position: pick.position,
-                    total_points: element.stats.total_points,
-                    minutes: element.stats.minutes,
-                    goals_scored: element.stats.goals_scored,
-                    assists: element.stats.assists,
-                    clean_sheets: element.stats.clean_sheets,
-                    goals_conceded: element.stats.goals_conceded,
-                    own_goals: element.stats.own_goals,
-                    penalties_saved: element.stats.penalties_saved,
-                    penalties_missed: element.stats.penalties_missed,
-                    yellow_cards: element.stats.yellow_cards,
-                    red_cards: element.stats.red_cards,
-                    saves: element.stats.saves,
-                    bonus: element.stats.bonus,
-                }
+            .into_iter()
+            .filter_map(|pick| {
+                weekly_result_data.get(&pick.element.to_string()).map(|element| {
+                    CombinedTeamResult {
+                        element: pick.element,
+                        position: pick.position,
+                        total_points: element.stats.total_points,
+                        bonus: element.stats.bonus,
+                        explain: element.explain.clone(),  // Now we're returning the whole Vec<ExplainItem>
+                    }
+                })
             })
-        })
-        .collect();
-
-    Ok(combined_data)
+            .collect();
+        Ok(combined_data)
     } else {
         Err(format!("Failed to fetch data: HTTP {}", response.status()).into())
     }
